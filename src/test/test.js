@@ -7,26 +7,6 @@ import sourceMapSupport from 'source-map-support';
 
 sourceMapSupport.install();
 
-function clean(obj) {
-  if (typeof obj !== "object") {
-    return obj;
-  } else {
-    if (Array.isArray(obj)) {
-      return obj.map(o => clean(o))
-    } else {
-      const newObj = {};
-      for (const key in obj) {
-        if (!(["start", "end", "loc", "computed", "shorthand", "extra", "__clone"].includes(key))) {
-          newObj[key] = clean(obj[key]);
-        }
-      }
-      return newObj;
-    }
-  }
-}
-
-
-
 describe("isotropy-parser-db", () => {
   function run([description, dir, opts]) {
     it(`${description}`, () => {
@@ -39,8 +19,7 @@ describe("isotropy-parser-db", () => {
         babelrc: false,
       });
 
-      const result = pluginInfo.getResult();
-      const actual = clean(result.analysis);
+      const actual = pluginInfo.getResult();
       actual.should.deepEqual(expected);
     });
   }

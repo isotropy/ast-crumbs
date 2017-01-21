@@ -1,7 +1,7 @@
+import crumbs from "../ast-crumbs";
+
 function isRoot(path, state, config) {
-  return path.isMemberExpression() && path.get("object").isIdentifier() ?
-    config.identifiers.includes(path.node.object.name) :
-    false;
+  return path.isMemberExpression() && path.get("object").isIdentifier() && path.node.object.name === "db"
 }
 
 function getRootArgs(path, state, config) {
@@ -12,70 +12,48 @@ const nodeDefinitions = [
   {
     id: "root",
     type: "predicate",
-    predicate: rootAnalyzer.isRoot,
-    builder: collection => { collection },
+    predicate: isRoot,
+    builder: args => ({ ...args }),
     args: getRootArgs
   },
   {
     id: "filter",
     name: "filter",
     type: "CallExpression",
-    follows: ["root", "sort"],
-    builder: dbStatements.filter,
-    args: getFilterArgs
+    follows: ["root"],
+    builder: (src, args) => ({ ...src, ...args }),
+    args: path => ({ filter: true })
   },
   {
     id: "slice",
     name: "slice",
     type: "CallExpression",
-    follows: ["root", "filter", "sort", "map"],
-    builder: dbStatements.slice,
-    args: getSliceArgs,
+    follows: ["root", "filter"],
+    builder: (src, args) => ({ ...src, ...args }),
+    args: path => ({ slice: true })
   },
 ];
 
-const plugin = {
-  visitor: {
-    CallExpression(path) {
-      
-    }
-  }
-}
+const analyzer = crumbs(
+  nodeDefinitions,
+  isRoot
+);
 
-
-
-export default function(opts) {
-  let _analysis;
-  let _state;
-
-  const transformers = {
-    read: {
-      transformCallExpression(path, analysis, state) {
-        _analysis = analysis;
-        _state = state;
-      },
-      transformMemberExpression(path, analysis, state) {
-        _analysis = analysis;
-        _state = state;
+export default function getPlugin() {
+  let result;
+  return {
+    plugin: {
+      visitor: {
+        CallExpression(path) {
+          result = analyzer(path, ["filter", "slice"]);
+          if (result) {
+            path.skip();
+          }
+        }
       }
     },
-    write: {
-      transformAssignmentExpression(path, analysis, state) {
-        _analysis = analysis;
-        _state = state;
-      }
-    }
-  }
-
-  return {
-    plugin: parserDb(
-      transformers,
-      opts.simple ?
-        { identifiers: ["db"] } :
-        { clientPackageName: 'isotropy-mongodb-client' }
-      ),
-    getResult: () => {
-      return { analysis: _analysis, state: _state };
+    getResult() {
+      return result;
     }
   }
 }
