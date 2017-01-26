@@ -32,6 +32,14 @@ const nodeDefinitions = [
     builder: (src, args) => ({ ...src, ...args }),
     args: path => ({ slice: true })
   },
+  {
+    id: "sort",
+    name: "sort",
+    type: "CallExpression",
+    follows: ["root", "filter"],
+    builder: (src, args) => ({ ...src, ...args }),
+    args: path => ({ slice: true })
+  },
 ];
 
 const analyzer = crumbs(
@@ -45,7 +53,7 @@ export default function getPlugin() {
     plugin: {
       visitor: {
         CallExpression(path) {
-          result = analyzer(path, ["filter", "slice"]);
+          result = analyzer(path, ["filter", "slice", "sort"]);
           if (result) {
             path.skip();
           }

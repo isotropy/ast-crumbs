@@ -1,3 +1,5 @@
+import Immutable from "immutable";
+
 function mustAnalyze(path, isRoot, state, config) {
   return isRoot(path, state, config) ||
     (
@@ -12,6 +14,7 @@ function throwIncorrectASTError(path, analyzedDefinitionIds, parentPath) {
 }
 
 function analyze(path, nodeDefinitionId, analyzedDefinitionIds, nodeDefinitions, state, config) {
+
   function analyzeParents(path, nodeDefinitionIds = []) {
     if (nodeDefinitionIds.length) {
       const [nodeDefinitionId, ...rest] = nodeDefinitionIds;
@@ -79,12 +82,10 @@ function analyze(path, nodeDefinitionId, analyzedDefinitionIds, nodeDefinitions,
 export default function(nodeDefinitions, isRoot) {
   return function(path, nodeDefinitionIds, state, config) {
     if (mustAnalyze(path, isRoot, state, config)) {
-      const result = (function f(args) {
-        if (args.length) {
-          const [nodeDefinitionId, ...rest] = args;
-          return analyze(path, nodeDefinitionId, [], nodeDefinitions, state, config) || f(rest);
-        }
-      })(nodeDefinitionIds);
+      const result = Immutable.Seq(nodeDefinitionIds)
+        .map(id => analyze(path, id, [], nodeDefinitions, state, config))
+        .filter(i => i)
+        .first();
 
       if (result) {
         return result;
