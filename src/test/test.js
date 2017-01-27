@@ -20,11 +20,13 @@ describe("isotropy-parser-db", () => {
       });
 
       const actual = pluginInfo.getResult();
-      actual.should.deepEqual(expected);
+      actual.value.should.deepEqual(expected);
     });
   }
 
   const tests = [
+    ['root', 'root'],
+    ['count', 'count'],
     ['select', 'select'],
     ['select-slice', 'select-slice'],
   ];

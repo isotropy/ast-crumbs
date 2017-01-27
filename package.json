@@ -1,6 +1,6 @@
 {
   "name": "ast-crumbs",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "author": "Jeswin<jeswinpk@agilehead.com>",
   "main": "dist/ast-crumbs",
   "scripts": {

@@ -33,13 +33,12 @@ const nodeDefinitions = [
     args: path => ({ slice: true })
   },
   {
-    id: "sort",
-    name: "sort",
-    type: "CallExpression",
+    id: "length",
+    name: "length",
+    type: "MemberExpression",
     follows: ["root", "filter"],
-    builder: (src, args) => ({ ...src, ...args }),
-    args: path => ({ slice: true })
-  },
+    builder: (src, args) => ({ ...src, length: true })
+  }
 ];
 
 const analyzer = crumbs(
@@ -47,17 +46,20 @@ const analyzer = crumbs(
   isRoot
 );
 
+function analyze(path, result) {
+  result.value = analyzer(path, ["filter", "slice", "length", "root"]);
+  if (result.value) {
+    path.skip();
+  }
+}
+
 export default function getPlugin() {
-  let result;
+  let result = {};
   return {
     plugin: {
       visitor: {
-        CallExpression(path) {
-          result = analyzer(path, ["filter", "slice", "sort"]);
-          if (result) {
-            path.skip();
-          }
-        }
+        CallExpression: path => analyze(path, result),
+        MemberExpression: path => analyze(path, result)
       }
     },
     getResult() {
