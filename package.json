@@ -1,7 +1,7 @@
 {
   "name": "ast-crumbs",
   "version": "0.0.3",
-  "author": "Jeswin<jeswinpk@agilehead.com>",
+  "author": "Isotropy Team<isotropy@agilehead.com>",
   "main": "dist/ast-crumbs",
   "scripts": {
     "test": "mocha dist/test/test.js"
